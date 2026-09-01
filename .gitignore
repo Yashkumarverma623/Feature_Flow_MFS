@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+/.pnpm-store
+
+# Build & Output directories
+dist/
+.next/
+out/
+build/
+*.tsbuildinfo
+
+# Test outputs & logs
+test-results/
+coverage/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment & Secret files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Operating System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

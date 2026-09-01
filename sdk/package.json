@@ -1,0 +1,13 @@
+{
+  "name": "featureflow-sdk",
+  "version": "1.0.0",
+  "description": "TypeScript/Node.js SDK for FeatureFlow Flag Evaluation and Experiment Tracking",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}
