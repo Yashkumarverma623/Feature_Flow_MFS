@@ -2,8 +2,9 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
-import { ShieldAlert, User, Clock, Tag } from 'lucide-react';
 import { fetchApi } from '../../../../lib/api';
+import { Badge } from '../../../../components/ui/Badge';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../../../components/ui/Table';
 
 export default function AuditLogsPage() {
   const params = useParams();
@@ -17,57 +18,58 @@ export default function AuditLogsPage() {
   const auditLogs = data?.data || [];
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-white tracking-tight">Audit Log History</h1>
-        <p className="text-sm text-slate-400 mt-1">Append-only audit record of project changes, flag mutations, and environment updates</p>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="pb-4 border-b border-zinc-800/80">
+        <h1 className="text-base font-semibold text-zinc-100 tracking-tight">Audit Log Stream</h1>
+        <p className="text-xs text-zinc-400 mt-0.5">Append-only system record of configuration mutations and security actions</p>
       </div>
 
       {isLoading ? (
-        <div className="glass-card p-12 rounded-2xl text-center text-slate-500 text-sm">Loading audit logs...</div>
+        <div className="p-8 border border-zinc-800 rounded-md text-center text-zinc-500 text-xs font-mono">
+          Loading audit logs...
+        </div>
       ) : auditLogs.length === 0 ? (
-        <div className="glass-card p-12 rounded-2xl text-center text-slate-500 text-sm border border-slate-800">
-          No audit history recorded for this project yet.
+        <div className="p-8 border border-zinc-800 rounded-md text-center text-zinc-500 text-xs font-mono bg-zinc-950">
+          No audit entries recorded for this workspace yet.
         </div>
       ) : (
-        <div className="glass-card rounded-2xl border border-slate-800 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-900/80 border-b border-slate-800 text-slate-400 font-semibold uppercase tracking-wider">
-                <tr>
-                  <th className="p-4">Timestamp</th>
-                  <th className="p-4">Actor</th>
-                  <th className="p-4">Action</th>
-                  <th className="p-4">Resource</th>
-                  <th className="p-4">Metadata</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/80">
-                {auditLogs.map((log: any) => (
-                  <tr key={log.id} className="hover:bg-slate-900/40 transition-colors">
-                    <td className="p-4 font-mono text-slate-400 whitespace-nowrap">
-                      {new Date(log.created_at).toLocaleString()}
-                    </td>
-                    <td className="p-4 font-semibold text-white">
-                      {log.user_name || 'System / Service'}
-                    </td>
-                    <td className="p-4">
-                      <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                        {log.action}
-                      </span>
-                    </td>
-                    <td className="p-4 text-slate-300 font-mono">
-                      {log.resource_type}
-                    </td>
-                    <td className="p-4 font-mono text-[11px] text-slate-400 max-w-xs truncate">
-                      {JSON.stringify(log.metadata)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <Table>
+          <TableHeader>
+            <tr>
+              <TableHead>Timestamp</TableHead>
+              <TableHead>Actor</TableHead>
+              <TableHead>Action</TableHead>
+              <TableHead>Resource</TableHead>
+              <TableHead>Payload Metadata</TableHead>
+            </tr>
+          </TableHeader>
+          <TableBody>
+            {auditLogs.map((log: any) => (
+              <TableRow key={log.id}>
+                <TableCell className="font-mono text-zinc-400 whitespace-nowrap text-[11px]">
+                  {new Date(log.created_at).toLocaleString()}
+                </TableCell>
+
+                <TableCell className="font-semibold text-zinc-200">
+                  {log.user_name || 'System / Service'}
+                </TableCell>
+
+                <TableCell>
+                  <Badge variant="zinc">{log.action}</Badge>
+                </TableCell>
+
+                <TableCell className="font-mono text-zinc-400 text-[11px]">
+                  {log.resource_type}
+                </TableCell>
+
+                <TableCell className="font-mono text-[11px] text-zinc-500 max-w-sm truncate">
+                  {JSON.stringify(log.metadata)}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
     </div>
   );

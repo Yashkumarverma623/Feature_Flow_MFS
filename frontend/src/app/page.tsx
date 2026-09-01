@@ -16,8 +16,11 @@ export default function HomePage() {
   }, [router]);
 
   return (
-    <div className="flex items-center justify-center min-h-[60vh]">
-      <div className="text-sm text-slate-400 animate-pulse">Loading FeatureFlow...</div>
+    <div className="flex items-center justify-center min-h-[50vh]">
+      <div className="text-xs font-mono text-zinc-500 flex items-center gap-2">
+        <span className="h-2 w-2 rounded-full bg-zinc-400 animate-ping"></span>
+        <span>Initializing FeatureFlow...</span>
+      </div>
     </div>
   );
 }

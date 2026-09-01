@@ -3,8 +3,13 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
-import { KeyRound, RefreshCw, Trash2, Copy, Check, Eye, X, ShieldAlert } from 'lucide-react';
+import { KeyRound, RefreshCw, Trash2, Copy, Check, ShieldAlert } from 'lucide-react';
 import { fetchApi } from '../../../../lib/api';
+import { Button } from '../../../../components/ui/Button';
+import { Input } from '../../../../components/ui/Input';
+import { Badge } from '../../../../components/ui/Badge';
+import { Panel } from '../../../../components/ui/Panel';
+import { Modal } from '../../../../components/ui/Modal';
 
 export default function EnvironmentsPage() {
   const params = useParams();
@@ -54,115 +59,104 @@ export default function EnvironmentsPage() {
   const environments = data?.data || [];
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-white tracking-tight">Environment API Keys</h1>
-        <p className="text-sm text-slate-400 mt-1">Manage SDK authentication keys for DEVELOPMENT, STAGING, and PRODUCTION</p>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="pb-4 border-b border-zinc-800/80">
+        <h1 className="text-base font-semibold text-zinc-100 tracking-tight">Environment API Keys</h1>
+        <p className="text-xs text-zinc-400 mt-0.5">Infrastructure SDK authentication keys for DEVELOPMENT, STAGING, and PRODUCTION</p>
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm font-medium">
+        <div className="p-3 rounded bg-rose-950/40 border border-rose-800/40 text-rose-300 text-xs font-mono">
           {error}
         </div>
       )}
 
       {isLoading ? (
-        <div className="glass-card p-12 rounded-2xl text-center text-slate-500 text-sm">Loading environments...</div>
+        <div className="p-8 border border-zinc-800 rounded-md text-center text-zinc-500 text-xs font-mono">
+          Loading environments...
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {environments.map((env: any) => (
-            <div key={env.id} className="glass-card p-6 rounded-2xl border border-slate-800 space-y-6 flex flex-col justify-between">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className={`px-3 py-1 rounded-full text-xs font-extrabold uppercase ${
-                    env.name === 'PRODUCTION'
-                      ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                      : env.name === 'STAGING'
-                      ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                      : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
-                  }`}>
-                    {env.name}
-                  </span>
-                  <KeyRound className="h-5 w-5 text-slate-500" />
-                </div>
-
+            <Panel
+              key={env.id}
+              action={
+                <Badge
+                  variant={env.name === 'PRODUCTION' ? 'emerald' : env.name === 'STAGING' ? 'amber' : 'zinc'}
+                >
+                  {env.name}
+                </Badge>
+              }
+            >
+              <div className="space-y-4">
                 <div className="space-y-1">
-                  <span className="text-xs text-slate-500">API Key Hash Status</span>
-                  <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 font-mono text-[11px] text-slate-400 truncate">
-                    SHA256 Encrypted Hash Stored
+                  <span className="text-[11px] text-zinc-500 font-mono">API Key Status</span>
+                  <div className="p-2 rounded bg-zinc-900 border border-zinc-800 font-mono text-[11px] text-zinc-400 truncate">
+                    SHA256 Secret Hash Stored
                   </div>
                 </div>
-              </div>
 
-              <div className="flex items-center justify-between border-t border-slate-800/80 pt-4 gap-2">
-                <button
-                  onClick={() => revokeMutation.mutate(env.id)}
-                  disabled={revokeMutation.isPending}
-                  className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-xs font-semibold flex items-center gap-1"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  <span>Revoke</span>
-                </button>
+                <div className="flex items-center justify-between border-t border-zinc-900 pt-3 gap-2">
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => revokeMutation.mutate(env.id)}
+                    disabled={revokeMutation.isPending}
+                    icon={<Trash2 className="h-3 w-3" />}
+                  >
+                    Revoke Key
+                  </Button>
 
-                <button
-                  onClick={() => regenMutation.mutate(env.id)}
-                  disabled={regenMutation.isPending}
-                  className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/30 flex items-center gap-1"
-                >
-                  <RefreshCw className="h-3.5 w-3.5" />
-                  <span>Regenerate Secret</span>
-                </button>
+                  <Button
+                    size="sm"
+                    onClick={() => regenMutation.mutate(env.id)}
+                    disabled={regenMutation.isPending}
+                    icon={<RefreshCw className="h-3 w-3" />}
+                  >
+                    Regenerate Key
+                  </Button>
+                </div>
               </div>
-            </div>
+            </Panel>
           ))}
         </div>
       )}
 
-      {/* Raw Secret Reveal Modal */}
-      {rawSecret && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="glass-panel w-full max-w-lg p-6 rounded-2xl border border-slate-800 space-y-6">
-            <div className="flex items-center justify-between text-indigo-400">
-              <div className="flex items-center gap-2">
-                <ShieldAlert className="h-6 w-6" />
-                <h2 className="text-xl font-bold text-white">Environment API Key Created</h2>
-              </div>
-              <button onClick={() => setRawSecret(null)} className="text-slate-400 hover:text-white">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs">
-              <strong>IMPORTANT:</strong> Save this raw API secret now. It will <u>never</u> be displayed again.
-            </div>
-
-            <div className="relative">
-              <input
-                type="text"
-                readOnly
-                value={rawSecret}
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-3 pr-12 text-sm font-mono text-emerald-400 focus:outline-none"
-              />
-              <button
-                onClick={copyToClipboard}
-                className="absolute right-2 top-2 p-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
-                title="Copy to Clipboard"
-              >
-                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              </button>
-            </div>
-
-            <div className="flex justify-end">
-              <button
-                onClick={() => setRawSecret(null)}
-                className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold"
-              >
-                Done
-              </button>
-            </div>
-          </div>
+      {/* Secret Reveal Modal */}
+      <Modal
+        isOpen={Boolean(rawSecret)}
+        onClose={() => setRawSecret(null)}
+        title="Environment Secret Generated"
+        footer={
+          <Button size="sm" onClick={() => setRawSecret(null)}>
+            Done
+          </Button>
+        }
+      >
+        <div className="p-3 rounded bg-amber-950/40 border border-amber-800/40 text-amber-300 text-xs flex items-center gap-2">
+          <ShieldAlert className="h-4 w-4 shrink-0" />
+          <span>
+            <strong>IMPORTANT:</strong> Copy and store this secret key safely. It will <u>never</u> be shown again.
+          </span>
         </div>
-      )}
+
+        <div className="relative">
+          <Input
+            mono
+            readOnly
+            value={rawSecret || ''}
+            className="pr-12 text-emerald-400 font-mono font-bold"
+          />
+          <button
+            onClick={copyToClipboard}
+            className="absolute right-1.5 top-1.5 p-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition-colors"
+            title="Copy Secret"
+          >
+            {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

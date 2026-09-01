@@ -2,25 +2,44 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Flag, FolderKanban, FlaskConical, Settings, ShieldAlert, LogOut, Layers, KeyRound } from 'lucide-react';
+import { Flag, LogOut, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { fetchApi } from '../lib/api';
 
 export default function Navbar({ currentProjectId }: { currentProjectId?: string }) {
   const pathname = usePathname();
   const router = useRouter();
   const [userName, setUserName] = useState<string>('User');
   const [userRole, setUserRole] = useState<string>('MEMBER');
+  const [projectName, setProjectName] = useState<string>('');
 
   useEffect(() => {
-    const rawUser = localStorage.getItem('user');
-    if (rawUser) {
+    const rawUser = localStorage.getItem('token');
+    if (!rawUser && pathname !== '/login' && pathname !== '/register') {
+      router.push('/login');
+      return;
+    }
+    const rawUserData = localStorage.getItem('user');
+    if (rawUserData) {
       try {
-        const u = JSON.parse(rawUser);
+        const u = JSON.parse(rawUserData);
         setUserName(u.name || u.email);
         setUserRole(u.role || 'MEMBER');
       } catch {}
     }
-  }, []);
+  }, [pathname, router]);
+
+  useEffect(() => {
+    if (currentProjectId) {
+      fetchApi(`/projects/${currentProjectId}`)
+        .then((res) => {
+          if (res?.data?.name) {
+            setProjectName(res.data.name);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [currentProjectId]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -28,79 +47,115 @@ export default function Navbar({ currentProjectId }: { currentProjectId?: string
     router.push('/login');
   };
 
-  const navLinks = currentProjectId
-    ? [
-        { label: 'Overview', href: `/projects/${currentProjectId}`, icon: FolderKanban },
-        { label: 'Feature Flags', href: `/projects/${currentProjectId}/flags`, icon: Flag },
-        { label: 'Experiments', href: `/projects/${currentProjectId}/experiments`, icon: FlaskConical },
-        { label: 'Environments', href: `/projects/${currentProjectId}/environments`, icon: KeyRound },
-        { label: 'Audit History', href: `/projects/${currentProjectId}/audit`, icon: ShieldAlert },
-      ]
-    : [
-        { label: 'Dashboard', href: '/dashboard', icon: Layers },
-        { label: 'Projects', href: '/projects', icon: FolderKanban },
-        { label: 'Settings', href: '/settings', icon: Settings },
-      ];
-
   if (pathname === '/login' || pathname === '/register') return null;
 
-  return (
-    <nav className="glass-panel sticky top-0 z-50 border-b border-slate-800 px-6 py-3">
-      <div className="mx-auto flex max-w-7xl items-center justify-between">
-        {/* Brand */}
-        <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-            <Flag className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <span className="font-bold text-lg text-white tracking-tight">Feature<span className="gradient-text">Flow</span></span>
-            <span className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">v1.0</span>
-          </div>
-        </Link>
+  const globalTabs = [
+    { label: 'Dashboard', href: '/dashboard' },
+    { label: 'Projects', href: '/projects' },
+    { label: 'Settings', href: '/settings' },
+  ];
 
-        {/* Links */}
-        <div className="flex items-center gap-1 bg-slate-900/60 p-1 rounded-xl border border-slate-800">
-          {navLinks.map((link) => {
-            const Icon = link.icon;
-            const isActive = pathname === link.href || pathname.startsWith(link.href + '/');
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                  isActive
-                    ? 'bg-indigo-600/90 text-white shadow-sm shadow-indigo-600/40'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                }`}
-              >
-                <Icon className="h-4 w-4" />
-                <span>{link.label}</span>
-              </Link>
-            );
-          })}
+  const projectTabs = currentProjectId
+    ? [
+        { label: 'Overview', href: `/projects/${currentProjectId}` },
+        { label: 'Feature Flags', href: `/projects/${currentProjectId}/flags` },
+        { label: 'Experiments', href: `/projects/${currentProjectId}/experiments` },
+        { label: 'Environments', href: `/projects/${currentProjectId}/environments` },
+        { label: 'Audit History', href: `/projects/${currentProjectId}/audit` },
+      ]
+    : [];
+
+  return (
+    <header className="sticky top-0 z-40 bg-zinc-950 border-b border-zinc-800 text-xs">
+      <div className="mx-auto max-w-7xl px-4 h-12 flex items-center justify-between">
+        {/* Brand & Breadcrumbs */}
+        <div className="flex items-center gap-3">
+          <Link href="/dashboard" className="flex items-center gap-2 text-zinc-100 hover:text-white font-semibold tracking-tight">
+            <div className="h-6 w-6 rounded bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+              <Flag className="h-3.5 w-3.5 text-zinc-200" />
+            </div>
+            <span>FeatureFlow</span>
+          </Link>
+
+          {currentProjectId && (
+            <div className="flex items-center gap-2 text-zinc-500">
+              <ChevronRight className="h-3.5 w-3.5" />
+              <span className="font-mono text-zinc-300 font-medium">{projectName || 'Project'}</span>
+            </div>
+          )}
+
+          <span className="text-[10px] font-mono text-zinc-500 bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800">
+            v1.0
+          </span>
         </div>
 
-        {/* User Badge & Logout */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-indigo-400 border border-slate-700">
-              {userName.substring(0, 2).toUpperCase()}
+        {/* Global Navigation Tabs (when no project selected) */}
+        {!currentProjectId && (
+          <nav className="flex items-center gap-1">
+            {globalTabs.map((tab) => {
+              const isActive = pathname === tab.href;
+              return (
+                <Link
+                  key={tab.href}
+                  href={tab.href}
+                  className={`px-3 py-1 rounded transition-colors ${
+                    isActive
+                      ? 'bg-zinc-800 text-white font-medium border border-zinc-700/60'
+                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+                  }`}
+                >
+                  {tab.label}
+                </Link>
+              );
+            })}
+          </nav>
+        )}
+
+        {/* User Account Controls */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 px-2 py-1 rounded bg-zinc-900/60 border border-zinc-800/80">
+            <div className="h-5 w-5 rounded bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[10px] font-bold text-zinc-300">
+              {userName.substring(0, 1).toUpperCase()}
             </div>
-            <div className="hidden md:block text-left">
-              <p className="text-xs font-semibold text-slate-200">{userName}</p>
-              <p className="text-[10px] uppercase tracking-wider font-bold text-indigo-400">{userRole}</p>
-            </div>
+            <span className="text-zinc-300 font-medium max-w-[120px] truncate">{userName}</span>
+            <span className="text-[9px] font-mono uppercase bg-zinc-800 text-zinc-400 px-1 rounded">
+              {userRole}
+            </span>
           </div>
 
           <button
             onClick={handleLogout}
             title="Logout"
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-800 bg-slate-900/80 text-slate-400 hover:text-rose-400 hover:border-rose-500/30 transition-colors"
+            className="p-1.5 text-zinc-400 hover:text-rose-400 hover:bg-zinc-900 rounded border border-zinc-800 transition-colors"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
-    </nav>
+
+      {/* Project Sub-navigation Tabs (when in project view) */}
+      {currentProjectId && (
+        <div className="bg-zinc-950/80 border-t border-zinc-800/60 px-4">
+          <div className="mx-auto max-w-7xl flex items-center gap-6 overflow-x-auto">
+            {projectTabs.map((tab) => {
+              const isActive = pathname === tab.href;
+              return (
+                <Link
+                  key={tab.href}
+                  href={tab.href}
+                  className={`py-2 text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${
+                    isActive
+                      ? 'border-zinc-200 text-white'
+                      : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:border-zinc-700'
+                  }`}
+                >
+                  {tab.label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </header>
   );
 }

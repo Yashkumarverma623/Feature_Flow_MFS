@@ -3,8 +3,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { Flag, KeyRound, FlaskConical, ShieldAlert, Layers } from 'lucide-react';
+import { Flag, KeyRound, FlaskConical, Shield, ArrowRight } from 'lucide-react';
 import { fetchApi } from '../../../lib/api';
+import { Button } from '../../../components/ui/Button';
+import { Badge } from '../../../components/ui/Badge';
+import { Panel } from '../../../components/ui/Panel';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../../components/ui/Table';
 
 export default function ProjectDetailPage() {
   const params = useParams();
@@ -24,126 +28,124 @@ export default function ProjectDetailPage() {
   const environments = envsData?.data || [];
 
   if (loadingProj) {
-    return <div className="glass-card p-12 rounded-2xl text-center text-slate-500 text-sm">Loading project...</div>;
+    return (
+      <div className="p-8 border border-zinc-800 rounded-md text-center text-zinc-500 text-xs font-mono">
+        Loading project workspace...
+      </div>
+    );
   }
 
   if (!project) {
-    return <div className="glass-card p-12 rounded-2xl text-center text-rose-400 text-sm">Project not found</div>;
+    return (
+      <Panel className="text-center py-8">
+        <p className="text-rose-400 text-xs font-mono">Project not found or access denied.</p>
+      </Panel>
+    );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/80">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-white tracking-tight">{project.name}</h1>
-            <span className="text-xs font-mono px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-              {project.key}
-            </span>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-base font-semibold text-zinc-100 tracking-tight">{project.name}</h1>
+            <Badge variant="zinc">{project.key}</Badge>
           </div>
-          <p className="text-sm text-slate-400 mt-1">Project workspace dashboard and navigation</p>
+          <p className="text-xs text-zinc-400 mt-0.5">Workspace control plane for flags, environments, and experiments</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Link
-            href={`/projects/${projectId}/flags`}
-            className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-2"
-          >
-            <Flag className="h-4 w-4" />
-            <span>Manage Flags</span>
+        <div className="flex items-center gap-2">
+          <Link href={`/projects/${projectId}/flags`}>
+            <Button size="sm" icon={<Flag className="h-3.5 w-3.5" />}>
+              Manage Feature Flags
+            </Button>
           </Link>
         </div>
       </div>
 
-      {/* Quick Access Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Quick Navigation Panels */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <Link
           href={`/projects/${projectId}/flags`}
-          className="glass-card p-6 rounded-2xl border border-slate-800 hover:border-indigo-500/50 block group transition-all"
+          className="group bg-zinc-950 border border-zinc-800 hover:border-zinc-700 p-4 rounded-md transition-all block"
         >
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-white group-hover:text-indigo-400 transition-colors">Feature Flags</h3>
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-              <Flag className="h-5 w-5" />
-            </div>
+          <div className="flex items-center justify-between text-xs font-semibold text-zinc-200">
+            <span>Feature Flags</span>
+            <Flag className="h-4 w-4 text-zinc-400 group-hover:text-white" />
           </div>
-          <p className="text-xs text-slate-400 mt-3">Configure targeted rollouts and flag states</p>
+          <p className="text-[11px] text-zinc-500 mt-2">Targeted rollouts, boolean & multivariate flags</p>
         </Link>
 
         <Link
           href={`/projects/${projectId}/experiments`}
-          className="glass-card p-6 rounded-2xl border border-slate-800 hover:border-indigo-500/50 block group transition-all"
+          className="group bg-zinc-950 border border-zinc-800 hover:border-zinc-700 p-4 rounded-md transition-all block"
         >
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-white group-hover:text-indigo-400 transition-colors">Experiments</h3>
-            <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
-              <FlaskConical className="h-5 w-5" />
-            </div>
+          <div className="flex items-center justify-between text-xs font-semibold text-zinc-200">
+            <span>Experiments</span>
+            <FlaskConical className="h-4 w-4 text-amber-400" />
           </div>
-          <p className="text-xs text-slate-400 mt-3">Run A/B tests and track conversion analytics</p>
+          <p className="text-[11px] text-zinc-500 mt-2">A/B testing, conversion tracking & metrics</p>
         </Link>
 
         <Link
           href={`/projects/${projectId}/environments`}
-          className="glass-card p-6 rounded-2xl border border-slate-800 hover:border-indigo-500/50 block group transition-all"
+          className="group bg-zinc-950 border border-zinc-800 hover:border-zinc-700 p-4 rounded-md transition-all block"
         >
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-white group-hover:text-indigo-400 transition-colors">Environments</h3>
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-              <KeyRound className="h-5 w-5" />
-            </div>
+          <div className="flex items-center justify-between text-xs font-semibold text-zinc-200">
+            <span>Environments</span>
+            <KeyRound className="h-4 w-4 text-zinc-400 group-hover:text-white" />
           </div>
-          <p className="text-xs text-slate-400 mt-3">Manage API keys for DEV, STAGING, PROD</p>
+          <p className="text-[11px] text-zinc-500 mt-2">API key management for DEV, STAGING, PROD</p>
         </Link>
 
         <Link
           href={`/projects/${projectId}/audit`}
-          className="glass-card p-6 rounded-2xl border border-slate-800 hover:border-indigo-500/50 block group transition-all"
+          className="group bg-zinc-950 border border-zinc-800 hover:border-zinc-700 p-4 rounded-md transition-all block"
         >
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-white group-hover:text-indigo-400 transition-colors">Audit History</h3>
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <ShieldAlert className="h-5 w-5" />
-            </div>
+          <div className="flex items-center justify-between text-xs font-semibold text-zinc-200">
+            <span>Audit History</span>
+            <Shield className="h-4 w-4 text-zinc-400 group-hover:text-white" />
           </div>
-          <p className="text-xs text-slate-400 mt-3">Review append-only project audit logs</p>
+          <p className="text-[11px] text-zinc-500 mt-2">Append-only system activity log</p>
         </Link>
       </div>
 
-      {/* Environments Overview Table */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-bold text-white">Project Environments</h2>
-        <div className="glass-card rounded-2xl border border-slate-800 overflow-hidden">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-900/80 border-b border-slate-800 text-slate-400 font-semibold uppercase tracking-wider">
-              <tr>
-                <th className="p-4">Environment</th>
-                <th className="p-4">Status</th>
-                <th className="p-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/80">
-              {environments.map((env: any) => (
-                <tr key={env.id} className="hover:bg-slate-900/40 transition-colors">
-                  <td className="p-4 font-bold text-white flex items-center gap-2">
-                    <span className={`h-2 w-2 rounded-full ${env.name === 'PRODUCTION' ? 'bg-emerald-400' : env.name === 'STAGING' ? 'bg-amber-400' : 'bg-indigo-400'}`}></span>
+      {/* Environments Status Table */}
+      <div className="space-y-3">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Configured Environments</h2>
+        <Table>
+          <TableHeader>
+            <tr>
+              <TableHead>Environment</TableHead>
+              <TableHead>API Key Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </tr>
+          </TableHeader>
+          <TableBody>
+            {environments.map((env: any) => (
+              <TableRow key={env.id}>
+                <TableCell className="font-semibold text-zinc-200">
+                  <Badge
+                    variant={env.name === 'PRODUCTION' ? 'emerald' : env.name === 'STAGING' ? 'amber' : 'zinc'}
+                  >
                     {env.name}
-                  </td>
-                  <td className="p-4 text-slate-400 font-mono text-[11px]">API Key Configured</td>
-                  <td className="p-4 text-right">
-                    <Link
-                      href={`/projects/${projectId}/environments`}
-                      className="text-xs text-indigo-400 hover:underline font-semibold"
-                    >
-                      Manage API Key →
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </Badge>
+                </TableCell>
+                <TableCell className="font-mono text-zinc-400 text-[11px]">API Key Configured</TableCell>
+                <TableCell className="text-right">
+                  <Link
+                    href={`/projects/${projectId}/environments`}
+                    className="text-xs text-zinc-300 hover:text-white font-medium inline-flex items-center gap-1"
+                  >
+                    <span>Manage Keys</span>
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
