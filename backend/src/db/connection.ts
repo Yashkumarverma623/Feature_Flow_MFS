@@ -3,6 +3,9 @@ import { config } from '../config/env';
 
 export const pool = new Pool({
   connectionString: config.postgres.connectionString,
+  ssl: config.postgres.connectionString.includes('ssl') || process.env.NODE_ENV === 'production'
+    ? { rejectUnauthorized: false }
+    : undefined,
   max: 50,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,
