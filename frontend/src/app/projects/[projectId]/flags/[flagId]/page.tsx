@@ -195,10 +195,12 @@ export default function FlagDetailPage() {
                 </button>
               </div>
 
-              {/* Deterministic Rollout Slider */}
+              {/* Rollout Percentage Section */}
               <div className="space-y-2 p-3 rounded bg-zinc-900 border border-zinc-800">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-zinc-200">Deterministic Rollout</span>
+                  <span className="font-semibold text-zinc-200">
+                    Rollout percentage (0% - 100%) using deterministic MurmurHash3 evaluation
+                  </span>
                   <span className="font-mono font-bold text-zinc-100">{rolloutPercentage}%</span>
                 </div>
                 <input
@@ -209,9 +211,6 @@ export default function FlagDetailPage() {
                   onChange={(e) => setRolloutPercentage(Number(e.target.value))}
                   className="w-full accent-zinc-200 cursor-pointer"
                 />
-                <p className="text-[10px] text-zinc-500">
-                  MurmurHash3 ensures users consistently land in percentage buckets 0–99.
-                </p>
               </div>
 
               {/* Metadata Inputs */}

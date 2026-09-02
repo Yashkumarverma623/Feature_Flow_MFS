@@ -83,10 +83,6 @@ export default function Navbar({ currentProjectId }: { currentProjectId?: string
               <span className="font-mono text-zinc-300 font-medium">{projectName || 'Project'}</span>
             </div>
           )}
-
-          <span className="text-[10px] font-mono text-zinc-500 bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800">
-            v1.0
-          </span>
         </div>
 
         {/* Global Navigation Tabs (when no project selected) */}
